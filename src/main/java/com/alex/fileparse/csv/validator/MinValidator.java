@@ -3,6 +3,8 @@ package com.alex.fileparse.csv.validator;
 import com.alex.fileparse.csv.annotation.Min;
 
 import java.lang.annotation.Annotation;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 
 /**
  * Created with IntelliJ IDEA.
@@ -11,29 +13,35 @@ import java.lang.annotation.Annotation;
  * Time: 下午3:00
  * To change this template use File | Settings | File Templates.
  */
-public class MinValidator extends Validator {
-    private Min annotation;
-
-    public MinValidator(Annotation annotation) {
-        if (annotation instanceof Min) {
-            this.annotation = (Min) annotation;
-        } else
-            throw new RuntimeException("指定的参数不是" + Min.class.getName()
-                    + "，初始化" + MinValidator.class.getName() + "失败。");
-    }
-
+public class MinValidator implements Validator<Min> {
     @Override
-    public String validate(Object value) {
-        if (value == null)
+    public String validate(Min annotation, Object value) {
+        if (annotation == null || value == null)
             return null;
-        if (value instanceof Number) {
-            double expect = annotation.value();
-            double actual = ((Number) value).doubleValue();
-            if (actual < expect)
-                return "低于最小值，期望" + actual + "，实际" + expect + "。";
-            else if (actual == expect && annotation.allowEqual() == false)
-                return "低于最小值，期望" + actual + "(不允许相等)，实际" + expect + "。";
+
+        BigDecimal dv = toBigDecimal(value);
+        int result = dv.compareTo(BigDecimal.valueOf(annotation.value()));
+        if (annotation.allowEqual()) {
+            if (result < 0)
+                return "小于最小值，期望" + annotation.value() + "，实际" + dv + "。";
+        } else {
+            if (result >= 0)
+                return "小于最小值，期望" + annotation.value() + "(不允许相等)，实际" + dv + "。";
         }
         return null;
+    }
+
+
+    private BigDecimal toBigDecimal(Object value) {
+        if (value instanceof Double || value instanceof Float) {
+            return BigDecimal.valueOf(((Number) value).doubleValue());
+        } else if (value instanceof BigInteger) {
+            return BigDecimal.valueOf(((BigInteger) value).doubleValue());
+        } else if (value instanceof BigDecimal) {
+            return (BigDecimal) value;
+        } else if (value instanceof Number) {
+            return BigDecimal.valueOf(((Number) value).longValue());
+        } else
+            return null;
     }
 }

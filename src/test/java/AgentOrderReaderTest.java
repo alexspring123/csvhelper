@@ -22,16 +22,20 @@ public class AgentOrderReaderTest {
     @Test
     public void testFormat() throws CsvReadException, IOException, CsvWriteException {
         URL url = CsvReaderFormatTest.class.getResource("");
+        long begin = System.currentTimeMillis();
         CsvReader reader = new CsvReader(url.getPath() + FILE_NAME, CSVAgentOrder.class);
         List<CSVAgentOrder> list = new ArrayList<CSVAgentOrder>();
         list.addAll(reader.getBeans(50));
         while (reader.hasMore()) {
             list.addAll(reader.getBeans(50));
         }
+        System.out.println("读取总耗时：" + (System.currentTimeMillis() - begin) + "ms。");
 
+        begin = System.currentTimeMillis();
         CsvWriter writer = new CsvWriter("f:/111.csv", CSVAgentOrder.class);
         writer.start();
         writer.append(list);
         writer.end();
+        System.out.println("写入总耗时：" + (System.currentTimeMillis() - begin) + "ms。");
     }
 }

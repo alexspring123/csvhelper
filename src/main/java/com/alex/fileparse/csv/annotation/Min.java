@@ -11,7 +11,7 @@ import java.lang.annotation.*;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target(value = {ElementType.METHOD, ElementType.FIELD})
+@Target(value = {ElementType.FIELD})
 public @interface Min {
     double value() default 0;
 

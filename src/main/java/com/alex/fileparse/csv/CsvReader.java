@@ -2,7 +2,8 @@ package com.alex.fileparse.csv;
 
 import com.alex.fileparse.csv.annotation.Column;
 import com.alex.fileparse.csv.annotation.Pattern;
-import com.alex.fileparse.csv.validator.Validator;
+import com.alex.fileparse.csv.validator.FieldValidator;
+import com.alex.fileparse.csv.validator.ValidatorResult;
 import org.apache.log4j.Logger;
 
 import java.io.*;
@@ -14,9 +15,7 @@ import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * CSV文件解析器
@@ -34,27 +33,30 @@ public class CsvReader<T extends CsvBean> {
     private static final String DEFAULT_CHARACTER = "GBK";
 
     private BufferedReader reader;
-    private List<String> titles;
+    private Map<Title, Field> titleMap = new HashMap<Title, Field>();
+    private FieldValidator validator = new FieldValidator();
     private int count = 0;
     private int rowIndex = 0;
-    private String beanClassName;
+    private Class<T> beanClass;
 
-    public CsvReader(String filePath, String charsetName, Class<T> targetBean) throws CsvReadException {
+
+    public CsvReader(String filePath, String charsetName, Class<T> beanClass) throws CsvReadException {
         if (filePath == null)
             throw new IllegalArgumentException("参数filePath不能为NULL。");
         if (charsetName == null)
             throw new IllegalArgumentException("参数charsetName不能为NULL。");
-        if (targetBean == null)
+        if (beanClass == null)
             throw new IllegalArgumentException("参数targetBean不能为NULL。");
 
         long sysTime = 0;
-        if (logger.isDebugEnabled()) {
+        if (logger.isDebugEnabled())
             sysTime = System.currentTimeMillis();
-        }
+
+        this.beanClass = beanClass;
         initReader(filePath, charsetName);
         initTitle();
-        initRowCount(filePath, charsetName);
-        beanClassName = targetBean.getName();
+        this.count = getRowCount(filePath, charsetName);
+
         if (logger.isDebugEnabled())
             logger.debug("创建CsvReader耗时：" + (System.currentTimeMillis() - sysTime) + "ms。");
     }
@@ -79,17 +81,29 @@ public class CsvReader<T extends CsvBean> {
             String line = reader.readLine();
             if (line == null)
                 throw new CsvReadException("指定的文件不存在标题行。");
-            titles = decodeLine(line);
+            List<String> captions = decodeLine(line);
+
+            Field[] fields = beanClass.getDeclaredFields();
+            for (int i = 0; i < captions.size(); i++) {
+                Title title = new Title(captions.get(i), i);
+                titleMap.put(title, getFieldByCaption(fields, title.getCaption()));
+            }
         } catch (IOException e) {
             throw new CsvReadException("解析标题行出错。", e);
         }
     }
 
-    private void initRowCount(String filePath, String charsetName) throws CsvReadException {
-        long sysTime = 0;
-        if (logger.isDebugEnabled()) {
-            sysTime = System.currentTimeMillis();
+    private Field getFieldByCaption(Field[] fields, String caption) {
+        for (Field field : fields) {
+            String fieldCaption = getFieldCaption(field);
+            if (caption.equals(fieldCaption)) {
+                return field;
+            }
         }
+        return null;
+    }
+
+    private int getRowCount(String filePath, String charsetName) throws CsvReadException {
         int rows = 0;
         try {
             InputStreamReader input = new InputStreamReader(new FileInputStream(filePath), charsetName);
@@ -101,19 +115,7 @@ public class CsvReader<T extends CsvBean> {
         } catch (IOException e) {
             throw new CsvReadException("查询总记录条数出错。", e);
         }
-        this.count = rows;
-
-        if (logger.isDebugEnabled())
-            logger.debug("initRowCount耗时：" + (System.currentTimeMillis() - sysTime) + "ms。");
-    }
-
-    private T reflectBean(String beanClassName) throws CsvReadException {
-        try {
-            Class<T> rootClass = (Class<T>) Class.forName(beanClassName);
-            return rootClass.newInstance();
-        } catch (Exception e) {
-            throw new CsvReadException("创建" + beanClassName + "失败。");
-        }
+        return rows;
     }
 
     private List<String> decodeLine(String line) {
@@ -192,19 +194,22 @@ public class CsvReader<T extends CsvBean> {
         return count;
     }
 
-    public List<T> getBeans(int rowsCount) throws CsvReadException, IOException {
+    public List<T> getAllBeans() throws CsvReadException, IOException {
+        return getBeans(count);
+    }
+
+    public List<T> getBeans(int pageSize) throws CsvReadException, IOException {
         long sysTime = 0;
         if (logger.isDebugEnabled()) {
             sysTime = System.currentTimeMillis();
         }
-        boolean limitRows = rowsCount > 0;
         List<T> beans = new ArrayList<T>();
         String line;
-        int hasReadCount = 0;
+        int readCount = 0;
         while ((line = reader.readLine()) != null) {
-            hasReadCount++;
+            readCount++;
             beans.add(convert(++rowIndex, line));
-            if (limitRows && hasReadCount >= rowsCount)
+            if (readCount >= pageSize)
                 break;
         }
         if (logger.isDebugEnabled())
@@ -214,87 +219,38 @@ public class CsvReader<T extends CsvBean> {
 
     private T convert(int lineNumber, String line) throws CsvReadException {
         List<String> row = decodeLine(line);
-        T bean = reflectBean(beanClassName);
+
+        T bean = createNewBean();
         bean.setLineNumber(lineNumber);
-        Field[] fields = bean.getClass().getDeclaredFields();
-        for (Field field : fields) {
-            String title = getTitle(field);
-            if (title == null)
+
+        for (Title title : titleMap.keySet()) {
+            Field field = titleMap.get(title);
+            if (field == null)
                 continue;
-            Object fieldValue = getFieldValue(row, field, title);
-            bean.addErrorMsg(validate(title, field, fieldValue));
-            convertField(bean, field, fieldValue);
+            String content = row.get(title.getColumn());
+            ValidatorResult result = validator.validate(field, content);
+            if (result.isIsvalid()) {
+                convertField(bean, field, result.getValue());
+            } else {
+                bean.addErrorMsg(result.getErrorMsg());
+            }
         }
         return bean;
     }
 
-    private String getTitle(Field field) {
+    private T createNewBean() throws CsvReadException {
+        try {
+            return beanClass.newInstance();
+        } catch (Exception e) {
+            throw new CsvReadException("反射" + beanClass.getName() + "失败。", e);
+        }
+    }
+
+    private String getFieldCaption(Field field) {
         Annotation annotation = field.getAnnotation(Column.class);
         if (annotation == null)
             return null;
         return ((Column) annotation).name();
-    }
-
-    private Object getFieldValue(List<String> row, Field field, String title) throws CsvReadException {
-        String content = getFieldContent(row, title);
-        Pattern patternAnnotation = field.getAnnotation(Pattern.class);
-        return parserFieldValue(field.getType(), content, patternAnnotation == null ? null : patternAnnotation.value());
-    }
-
-    private String getFieldContent(List<String> row, String title) throws CsvReadException {
-        int titleIndex = titles.indexOf(title);
-        if (titleIndex == -1) {
-            throw new CsvReadException("标题\"" + title + "\"不存在。");
-        }
-        return row.get(titleIndex);
-    }
-
-    private Object parserFieldValue(Class fieldClass, Object value, String pattern) throws CsvReadException {
-        if (value == null || "".equals(value.toString()))
-            return null;
-
-        if (fieldClass == String.class) {
-            return value;
-        } else if (fieldClass == Date.class) {
-            if (pattern == null)
-                pattern = "yyyy-MM-dd";
-            DateFormat dateFormat = new SimpleDateFormat(pattern);
-            Date date = null;
-            try {
-                date = dateFormat.parse(value.toString());
-            } catch (ParseException e) {
-            }
-            return date;
-        } else if (fieldClass == BigDecimal.class) {
-            return new BigDecimal(value.toString());
-        } else if (fieldClass == Integer.class) {
-            return Integer.valueOf(value.toString());
-        } else if (fieldClass == int.class) {
-            return Integer.valueOf(value.toString()).intValue();
-        } else if (fieldClass == long.class) {
-            return Long.valueOf(value.toString()).longValue();
-        } else if (fieldClass == Long.class) {
-            return Long.valueOf(value.toString());
-        } else if (fieldClass == float.class) {
-            return Float.valueOf(value.toString()).floatValue();
-        } else if (fieldClass == Float.class) {
-            return Float.valueOf(value.toString());
-        } else if (fieldClass == double.class) {
-            return Double.valueOf(value.toString()).doubleValue();
-        } else if (fieldClass == Double.class) {
-            return Double.valueOf(value.toString());
-        } else if (fieldClass == short.class) {
-            return Short.valueOf(value.toString()).shortValue();
-        } else if (fieldClass == Short.class) {
-            return Short.valueOf(value.toString());
-        } else if (fieldClass == boolean.class) {
-            return Boolean.valueOf(value.toString()).booleanValue();
-        } else if (fieldClass == Boolean.class) {
-            return Boolean.valueOf(value.toString());
-        } else if (fieldClass == char.class) {
-            return value.toString().charAt(0);
-        }
-        throw new CsvReadException("不支持的数据类型" + fieldClass.getName());
     }
 
     private void convertField(T bean, Field field, Object fieldValue) throws CsvReadException {
@@ -314,19 +270,6 @@ public class CsvReader<T extends CsvBean> {
         } catch (InvocationTargetException e) {
             throw new CsvReadException("调用类" + bean.getClass().getName() + "中方法" + setterName + "出错。", e);
         }
-    }
-
-    private String validate(String title, Field field, Object value) {
-        StringBuilder sb = new StringBuilder();
-        for (Annotation annotation : field.getAnnotations()) {
-            String errorMsg = Validator.getInstance(annotation).validate(value);
-            if (errorMsg != null)
-                sb.append(errorMsg);
-        }
-        if (sb.length() > 0) {
-            return title + sb.toString();
-        } else
-            return null;
     }
 
     private String getSetter(String fieldName) {
