@@ -21,6 +21,10 @@ public class ValidatorResult {
             sb.append(errorMsg);
         sb.append(msg);
         this.errorMsg = sb.toString();
+
+        if (this.isIsvalid()) {
+            setIsvalid(false);
+        }
     }
 
     public Object getValue() {

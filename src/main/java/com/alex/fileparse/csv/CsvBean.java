@@ -42,9 +42,6 @@ public class CsvBean implements Serializable {
             sb.append(this.errorMsg);
         sb.append(errorMsg);
         this.errorMsg = sb.toString();
-
-        if (this.isValid())
-            setValid(false);
     }
 
     @Override

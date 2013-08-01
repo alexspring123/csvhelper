@@ -1,9 +1,9 @@
 package com.alex.fileparse.csv.validator;
 
 import com.alex.fileparse.csv.CsvReadException;
-import com.alex.fileparse.csv.annotation.*;
+import com.alex.fileparse.csv.annotation.Column;
+import com.alex.fileparse.csv.annotation.Pattern;
 
-import java.lang.Boolean;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
@@ -33,7 +33,7 @@ public class FieldValidator {
             value = getValue(field, content);
             result.setValue(value);
         } catch (Exception e) {
-            result.setErrorMsg(e.getMessage());
+            result.addErrorMgr(e.getMessage());
             return result;
         }
 
@@ -55,7 +55,6 @@ public class FieldValidator {
                 }
             }
         }
-        result.setIsvalid(result.getErrorMsg() == null);
         return result;
     }
 
@@ -72,10 +71,11 @@ public class FieldValidator {
             } else if (fieldType == Date.class) {
                 Pattern patternAnnotion = field.getAnnotation(Pattern.class);
                 String pattern = "yyyy-MM-dd";
-                if (pattern != null)
+                if (patternAnnotion.value() != null)
                     pattern = patternAnnotion.value();
                 typeDescription = "日期(" + pattern + ")";
                 DateFormat dateFormat = new SimpleDateFormat(pattern);
+                dateFormat.setLenient(false);
                 return dateFormat.parse(content);
             } else if (fieldType == BigDecimal.class) {
                 return getBigDecimal(field, content);

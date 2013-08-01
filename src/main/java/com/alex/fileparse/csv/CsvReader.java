@@ -1,7 +1,6 @@
 package com.alex.fileparse.csv;
 
 import com.alex.fileparse.csv.annotation.Column;
-import com.alex.fileparse.csv.annotation.Pattern;
 import com.alex.fileparse.csv.validator.FieldValidator;
 import com.alex.fileparse.csv.validator.ValidatorResult;
 import org.apache.log4j.Logger;
@@ -11,11 +10,10 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.math.BigDecimal;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * CSV文件解析器
@@ -233,6 +231,7 @@ public class CsvReader<T extends CsvBean> {
                 convertField(bean, field, result.getValue());
             } else {
                 bean.addErrorMsg(result.getErrorMsg());
+                bean.setValid(false);
             }
         }
         return bean;

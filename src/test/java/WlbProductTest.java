@@ -13,14 +13,14 @@ import java.util.List;
  * Time: 下午9:15
  * To change this template use File | Settings | File Templates.
  */
-public class CsvReaderFormatTest {
-    private static final String FILE_NAME = "formatTest.csv";
+public class WlbProductTest {
+    private static final String FILE_NAME = "wlbproduct.csv";
 
     @Test
     public void testFormat() throws CsvReadException, IOException {
         URL url = CsvReaderFormatTest.class.getResource("");
         CsvReader reader = new CsvReader(url.getPath() + FILE_NAME, CSVWlbProduct.class);
-        List<TestObject> list = reader.getBeans(0);
+        List<CSVWlbProduct> list = reader.getBeans(0);
         System.out.println(list.size());
 
     }
