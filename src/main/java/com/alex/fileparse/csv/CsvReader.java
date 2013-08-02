@@ -216,10 +216,22 @@ public class CsvReader<T extends CsvBean> {
     }
 
     private T convert(int lineNumber, String line) throws CsvReadException {
-        List<String> row = decodeLine(line);
-
         T bean = createNewBean();
         bean.setLineNumber(lineNumber);
+        if (line == null || "".equals(line)) {
+            bean.setResult(ProcessResult.ignore);
+            bean.addMessage("空行。");
+            return bean;
+        }
+
+        List<String> row = decodeLine(line);
+        int titleCount = titleMap.keySet().size();
+        int rowCount = row.size();
+        if (rowCount < titleCount) {
+            bean.setResult(ProcessResult.failed);
+            bean.addMessage("缺少列，期望" + titleMap.keySet().size() + "列，实际" + row.size() + "列 。");
+            return bean;
+        }
 
         for (Title title : titleMap.keySet()) {
             Field field = titleMap.get(title);
@@ -230,8 +242,8 @@ public class CsvReader<T extends CsvBean> {
             if (result.isIsvalid()) {
                 convertField(bean, field, result.getValue());
             } else {
-                bean.addErrorMsg(result.getErrorMsg());
-                bean.setValid(false);
+                bean.setResult(ProcessResult.failed);
+                bean.addMessage(title.getCaption() + ":" + result.getErrorMsg());
             }
         }
         return bean;

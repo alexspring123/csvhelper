@@ -11,8 +11,8 @@ import java.io.Serializable;
  */
 public class CsvBean implements Serializable {
     private int lineNumber;
-    private boolean valid = true;
-    private String errorMsg;
+    private ProcessResult result = ProcessResult.success;
+    private String message;
 
     public int getLineNumber() {
         return lineNumber;
@@ -22,26 +22,26 @@ public class CsvBean implements Serializable {
         this.lineNumber = lineNumber;
     }
 
-    public boolean isValid() {
-        return valid;
+    public ProcessResult getResult() {
+        return result;
     }
 
-    public void setValid(boolean valid) {
-        this.valid = valid;
+    public void setResult(ProcessResult result) {
+        this.result = result;
     }
 
-    public String getErrorMsg() {
-        return errorMsg;
+    public String getMessage() {
+        return message;
     }
 
-    public void addErrorMsg(String errorMsg) {
-        if (errorMsg == null)
+    public void addMessage(String message) {
+        if (message == null || "".equals(message.trim()))
             return;
         StringBuilder sb = new StringBuilder();
-        if (this.errorMsg != null)
-            sb.append(this.errorMsg);
-        sb.append(errorMsg);
-        this.errorMsg = sb.toString();
+        if (this.message != null)
+            sb.append(this.message);
+        sb.append(message.trim());
+        this.message = sb.toString();
     }
 
     @Override
@@ -51,9 +51,8 @@ public class CsvBean implements Serializable {
 
         CsvBean csvBean = (CsvBean) o;
 
-        if (lineNumber != csvBean.lineNumber) return false;
+        return lineNumber == csvBean.lineNumber;
 
-        return true;
     }
 
     @Override

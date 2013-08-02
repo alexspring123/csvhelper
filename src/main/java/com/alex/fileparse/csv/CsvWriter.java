@@ -10,7 +10,6 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -25,9 +24,11 @@ import java.util.List;
  */
 public class CsvWriter<T extends CsvBean> {
     private static final String TITLE_PROCESSRESULT = "处理结果";
-    private static final String TITLE_ERRORMESSAGE = "失败原因";
+    private static final String TITLE_MESSAGE = "原因";
+
     private static final String PROCESS_SUCCESS = "成功";
     private static final String PROCESS_FAILED = "失败";
+    private static final String PROCESS_IGNORE = "忽略";
 
     private String targetFile;
     private List<String> titles;
@@ -69,7 +70,7 @@ public class CsvWriter<T extends CsvBean> {
             sb.append(getCellStr(title)).append(",");
         }
         sb.append(TITLE_PROCESSRESULT).append(",");
-        sb.append(TITLE_ERRORMESSAGE).append("\n");
+        sb.append(TITLE_MESSAGE).append("\n");
         return sb.toString();
     }
 
@@ -99,8 +100,13 @@ public class CsvWriter<T extends CsvBean> {
         for (String title : titles) {
             sb.append(getCellStr(getFieldValue(bean, title))).append(",");
         }
-        sb.append(bean.isValid() ? PROCESS_SUCCESS : PROCESS_FAILED).append(",");
-        sb.append(getCellStr(bean.getErrorMsg() == null ? "" : bean.getErrorMsg()));
+        if (ProcessResult.success.equals(bean.getResult()))
+            sb.append(PROCESS_SUCCESS).append(",");
+        else if (ProcessResult.ignore.equals(bean.getResult()))
+            sb.append(PROCESS_IGNORE).append(",");
+        else if (ProcessResult.failed.equals(bean.getResult()))
+            sb.append(PROCESS_FAILED).append(",");
+        sb.append(getCellStr(bean.getMessage() == null ? "" : bean.getMessage()));
         sb.append("\n");
         return sb.toString();
     }
@@ -110,7 +116,7 @@ public class CsvWriter<T extends CsvBean> {
             Field[] fields = bean.getClass().getDeclaredFields();
             for (Field field : fields) {
                 String fieldTitle = getTitle(field);
-                if (fieldTitle.equals(title) == false)
+                if (fieldTitle == null || fieldTitle.equals(title) == false)
                     continue;
                 field.setAccessible(true);
                 Object value = field.get(bean);

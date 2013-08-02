@@ -1,5 +1,7 @@
 import com.alex.fileparse.csv.CsvReadException;
 import com.alex.fileparse.csv.CsvReader;
+import com.alex.fileparse.csv.CsvWriteException;
+import com.alex.fileparse.csv.CsvWriter;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -17,12 +19,15 @@ public class WlbProductTest {
     private static final String FILE_NAME = "wlbproduct.csv";
 
     @Test
-    public void testFormat() throws CsvReadException, IOException {
+    public void testFormat() throws CsvReadException, IOException, CsvWriteException {
         URL url = CsvReaderFormatTest.class.getResource("");
         CsvReader reader = new CsvReader(url.getPath() + FILE_NAME, CSVWlbProduct.class);
-        List<CSVWlbProduct> list = reader.getBeans(0);
-        System.out.println(list.size());
+        List<CSVWlbProduct> list = reader.getAllBeans();
 
+        CsvWriter<CSVWlbProduct> writer = new CsvWriter<CSVWlbProduct>("f:/test.csv", CSVWlbProduct.class);
+        writer.start();
+        writer.append(list);
+        writer.end();
     }
 
 }
