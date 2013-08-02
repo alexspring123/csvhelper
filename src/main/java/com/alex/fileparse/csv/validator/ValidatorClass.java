@@ -15,5 +15,5 @@ import java.lang.annotation.Target;
 @Target(ElementType.ANNOTATION_TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ValidatorClass {
-    Class<? extends FieldValidator> value();
+    Class<? extends Validator> value();
 }

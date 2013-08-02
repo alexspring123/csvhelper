@@ -2,8 +2,6 @@ package com.alex.fileparse.csv.validator;
 
 import com.alex.fileparse.csv.annotation.Column;
 
-import java.lang.annotation.Annotation;
-
 /**
  * Created with IntelliJ IDEA.
  * User: alex
@@ -14,7 +12,7 @@ import java.lang.annotation.Annotation;
 public class ColumnValidator implements Validator<Column> {
     @Override
     public String validate(Column annotation, Object value) {
-        if (annotation == null || value == null)
+        if (annotation == null)
             return null;
 
         StringBuilder sb = new StringBuilder();

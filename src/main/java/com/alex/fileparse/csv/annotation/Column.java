@@ -1,5 +1,8 @@
 package com.alex.fileparse.csv.annotation;
 
+import com.alex.fileparse.csv.validator.ColumnValidator;
+import com.alex.fileparse.csv.validator.ValidatorClass;
+
 import java.lang.annotation.*;
 
 /**
@@ -12,6 +15,7 @@ import java.lang.annotation.*;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(value = {ElementType.FIELD})
+@ValidatorClass(value = ColumnValidator.class)
 public @interface Column {
     String name() default "";
 

@@ -3,7 +3,6 @@ package com.alex.fileparse.csv.validator;
 import com.alex.fileparse.csv.annotation.Enumeration;
 import org.apache.commons.lang3.StringUtils;
 
-import java.lang.annotation.Annotation;
 import java.util.Arrays;
 
 /**
