@@ -24,7 +24,9 @@ import java.util.HashMap;
  * To change this template use File | Settings | File Templates.
  */
 public class FieldValidator {
-    public static RoundingMode ROUNDINGMODE = RoundingMode.HALF_UP;
+    public static final RoundingMode ROUNDINGMODE = RoundingMode.HALF_UP;
+    public static final DateFormat DEFAULT_DATEFORMAT = new SimpleDateFormat("yyyy-MM-dd");
+    public static final String DEFAULT_DATEFORMAT_DESCRIPTION = "必须是\"年-月-日\"格式。";
 
     public ValidatorResult validate(Field field, String content) {
         ValidatorResult result = new ValidatorResult();
@@ -70,13 +72,20 @@ public class FieldValidator {
                 return content;
             } else if (fieldType == Date.class) {
                 Pattern patternAnnotion = field.getAnnotation(Pattern.class);
-                String pattern = "yyyy-MM-dd";
-                if (patternAnnotion.value() != null)
-                    pattern = patternAnnotion.value();
-                typeDescription = "日期(" + pattern + ")";
-                DateFormat dateFormat = new SimpleDateFormat(pattern);
-                dateFormat.setLenient(false);
-                return dateFormat.parse(content);
+                if (patternAnnotion == null) {
+                    typeDescription = DEFAULT_DATEFORMAT_DESCRIPTION;
+                    DEFAULT_DATEFORMAT.setLenient(false);
+                    return DEFAULT_DATEFORMAT.parse(content);
+                } else {
+                    if ("".equals(patternAnnotion.description())) {
+                        typeDescription = "日期(" + patternAnnotion.value() + ")";
+                    } else {
+                        typeDescription = "日期(" + patternAnnotion.description() + ")";
+                    }
+                    DateFormat dateFormat = new SimpleDateFormat(patternAnnotion.value());
+                    dateFormat.setLenient(false);
+                    return dateFormat.parse(content);
+                }
             } else if (fieldType == BigDecimal.class) {
                 return getBigDecimal(field, content);
             } else if (fieldType == Integer.class) {
