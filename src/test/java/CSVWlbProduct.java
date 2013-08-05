@@ -34,13 +34,13 @@ public class CSVWlbProduct extends CsvBean {
      * 起始日期
      */
     @Column(name = "开始日期", nullable = false)
-    @Pattern(value = "yyyy-MM-dd")
+    @Pattern(value = "yyyy-MM-dd", description = "必须是\"年-月-日\"格式。")
     private Date beginDate;
     /**
      * 截止日期
      */
     @Column(name = "截止日期", nullable = false)
-    @Pattern(value = "yyyy-MM-dd")
+    @Pattern(value = "yyyy-MM-dd", description = "必须是\"年-月-日\"格式。")
     private Date endDate;
 
     public String getProductCode() {
