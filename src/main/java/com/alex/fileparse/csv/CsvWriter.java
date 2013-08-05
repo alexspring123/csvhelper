@@ -74,11 +74,20 @@ public class CsvWriter<T extends CsvBean> {
         return sb.toString();
     }
 
+    /**
+     * 取得csv元素字符串<p>
+     * RFC 4180：http://tools.ietf.org/html/rfc4180
+     * wiki：http://zh.wikipedia.org/wiki/%E9%80%97%E5%8F%B7%E5%88%86%E9%9A%94%E5%80%BC
+     * </p>
+     *
+     * @param object
+     * @return
+     */
     private String getCellStr(String object) {
         if (object == null)
-            return "\" \",";
+            return "\"\"";
         StringBuilder sb = new StringBuilder();
-        sb.append("\"").append(object.toString().replaceAll("\"", "\\\"")).append("\"");
+        sb.append("\"").append(object.toString().replaceAll("\"", "\"\"")).append("\"");
         return sb.toString();
     }
 
