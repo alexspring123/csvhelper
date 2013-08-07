@@ -1,8 +1,7 @@
 package com.alex.fileparse.csv.validator;
 
 import com.alex.fileparse.csv.annotation.Pattern;
-
-import java.lang.annotation.Annotation;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Created with IntelliJ IDEA.
@@ -18,8 +17,13 @@ public class PatternValidator implements Validator<Pattern> {
             return null;
 
         if (value instanceof String) {
-            if (!java.util.regex.Pattern.matches(annotation.value(), (String) value))
-                return "不符合规范，期望\"" + annotation.value() + "\"，实际\"" + value + "\"。";
+            if (!java.util.regex.Pattern.matches(annotation.value(), (String) value)) {
+                if (StringUtils.isBlank(annotation.description()))
+                    return "不符合规范，期望\"" + annotation.value() + "\"，实际\"。";
+                else
+                    return "不符合规范，期望\"" + annotation.description() + "\"。";
+
+            }
         }
         return null;
     }

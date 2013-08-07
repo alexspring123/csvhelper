@@ -13,6 +13,7 @@ public class CsvBean implements Serializable {
     private int lineNumber;
     private ProcessResult result = ProcessResult.success;
     private String message;
+    private String content;
 
     public int getLineNumber() {
         return lineNumber;
@@ -32,6 +33,14 @@ public class CsvBean implements Serializable {
 
     public String getMessage() {
         return message;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
     }
 
     public void addMessage(String message) {
