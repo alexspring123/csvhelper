@@ -53,6 +53,18 @@ public class CsvBean implements Serializable {
         this.message = sb.toString();
     }
 
+    public boolean isSuccess() {
+        return ProcessResult.success.equals(getResult());
+    }
+
+    public boolean isFailed() {
+        return ProcessResult.failed.equals(getResult());
+    }
+
+    public boolean isIignore() {
+        return ProcessResult.ignore.equals(getResult());
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
