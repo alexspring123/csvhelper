@@ -2,7 +2,6 @@ package com.alex.fileparse.csv.validator;
 
 import com.alex.fileparse.csv.annotation.Min;
 
-import java.lang.annotation.Annotation;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
@@ -25,7 +24,7 @@ public class MinValidator implements Validator<Min> {
             if (result < 0)
                 return "小于最小值，期望" + annotation.value() + "，实际" + dv + "。";
         } else {
-            if (result >= 0)
+            if (result <= 0)
                 return "小于最小值，期望" + annotation.value() + "(不允许相等)，实际" + dv + "。";
         }
         return null;
