@@ -61,7 +61,7 @@ public class CsvBean implements Serializable {
         return ProcessResult.failed.equals(getResult());
     }
 
-    public boolean isIignore() {
+    public boolean isIgnore() {
         return ProcessResult.ignore.equals(getResult());
     }
 
