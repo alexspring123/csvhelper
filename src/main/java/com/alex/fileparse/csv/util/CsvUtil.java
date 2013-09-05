@@ -65,31 +65,31 @@ public class CsvUtil {
         return decodeRawWords(row);
     }
 
-    public static List<String> decodeRawLine(String rowLine) {
-        assert rowLine != null;
+        public static List<String> decodeRawLine(String rowLine) {
+            assert rowLine != null;
 
-        List<String> words = new ArrayList<String>();
+            List<String> words = new ArrayList<String>();
 
-        boolean quoteOn = false;
-        StringBuffer sb = new StringBuffer();
-        for (char c : rowLine.toCharArray()) {
-            if (c == CHAR_COMMA) {
-                if (quoteOn) {
+            boolean quoteOn = false;
+            StringBuffer sb = new StringBuffer();
+            for (char c : rowLine.toCharArray()) {
+                if (c == CHAR_COMMA) {
+                    if (quoteOn) {
+                        sb.append(c);
+                    } else {
+                        words.add(sb.toString().trim());
+                        sb = new StringBuffer();
+                    }
+                } else if (c == CHAR_QUOTE) {
+                    quoteOn = !quoteOn;
                     sb.append(c);
                 } else {
-                    words.add(sb.toString().trim());
-                    sb = new StringBuffer();
+                    sb.append(c);
                 }
-            } else if (c == CHAR_QUOTE) {
-                quoteOn = !quoteOn;
-                sb.append(c);
-            } else {
-                sb.append(c);
             }
+            words.add(sb.toString().trim());
+            return words;
         }
-        words.add(sb.toString().trim());
-        return words;
-    }
 
     public static Map<Title, Field> getTitleFields(String titleLine, Class clazz) {
         Map<Title, Field> titleMap = new HashMap<Title, Field>();
