@@ -56,9 +56,9 @@ public class CsvWriter<T extends CsvBean> {
      * 开始写入
      */
     public void start() throws IOException {
-        writer = new BufferedWriter(new FileWriter(targetFile));
-        writer.append(getTitleLine());
-    }
+    writer = new BufferedWriter(new FileWriter(targetFile));
+    writer.append(getTitleLine());
+  }
 
     private String getTitleLine() {
         StringBuilder sb = new StringBuilder();
