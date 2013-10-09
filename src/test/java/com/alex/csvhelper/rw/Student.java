@@ -20,7 +20,7 @@ public class Student extends CsvBean {
   private String name;
   @Column(name = "生日", nullable = false)
   @Pattern(value = "yyyy-mm-dd", description = "必须使用yyyy-mm-dd格式。")
-  private Date bothday;
+  private Date birthday;
   @Column(name = "身高", nullable = false, precision = 19, scale = 2)
   private long high;
   @Column(name = "年龄", nullable = false)
@@ -71,11 +71,11 @@ public class Student extends CsvBean {
     this.position = position;
   }
 
-  public Date getBothday() {
-    return bothday;
+  public Date getBirthday() {
+    return birthday;
   }
 
-  public void setBothday(Date bothday) {
-    this.bothday = bothday;
+  public void setBirthday(Date birthday) {
+    this.birthday = birthday;
   }
 }
