@@ -11,16 +11,16 @@ import java.util.Date;
 /**
  * Created with IntelliJ IDEA.
  * User: alex
- * Date: 13-9-30
- * Time: 下午1:24
+ * Date: 13-10-9
+ * Time: 下午1:04
  * To change this template use File | Settings | File Templates.
  */
-public class Person extends CsvBean {
+public class StudentHasExtraField extends CsvBean {
   @Column(name = "名称", nullable = false, length = 20)
   private String name;
   @Column(name = "生日", nullable = false)
   @Pattern(value = "yyyy-mm-dd", description = "必须使用yyyy-mm-dd格式。")
-  private Date bothday;
+  private Date birthday;
   @Column(name = "身高", nullable = false, precision = 19, scale = 2)
   private long high;
   @Column(name = "年龄", nullable = false)
@@ -30,6 +30,8 @@ public class Person extends CsvBean {
   private BigDecimal weight;
   @Column(name = "岗位")
   private String position;
+  @Column(name = "性别", nullable = false, length = 2)
+  private String sex;
 
   public String getName() {
     return name;
@@ -71,11 +73,19 @@ public class Person extends CsvBean {
     this.position = position;
   }
 
-  public Date getBothday() {
-    return bothday;
+  public Date getBirthday() {
+    return birthday;
   }
 
-  public void setBothday(Date bothday) {
-    this.bothday = bothday;
+  public void setBirthday(Date birthday) {
+    this.birthday = birthday;
+  }
+
+  public String getSex() {
+    return sex;
+  }
+
+  public void setSex(String sex) {
+    this.sex = sex;
   }
 }
