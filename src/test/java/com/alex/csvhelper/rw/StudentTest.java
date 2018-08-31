@@ -32,7 +32,7 @@ public class StudentTest {
 
   @Test
   public void testStudentRW() throws CsvReadException, CsvWriteException, IOException {
-    CsvRW<Student> rw = new CsvRW(file, backField, Student.class);
+    CsvRW<Student> rw = new CsvRW(file, backField, "UTF-8", Student.class);
     try {
       List<Student> list = rw.getAllBeans();
       Assert.assertEquals("取得记录行数错误。", 4, list.size());

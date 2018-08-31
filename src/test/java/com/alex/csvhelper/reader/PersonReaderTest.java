@@ -29,7 +29,7 @@ public class PersonReaderTest {
 
   @Test
   public void testPerson() throws CsvReadException, IOException {
-    CsvReader<Person> reader = new CsvReader(file, Person.class);
+    CsvReader<Person> reader = new CsvReader(file, "UTF-8", Person.class);
     try {
       List<Person> list = reader.getAllBeans();
       Assert.assertEquals("取得记录行数错误。", 4, list.size());
