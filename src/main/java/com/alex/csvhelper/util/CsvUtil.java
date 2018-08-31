@@ -1,6 +1,5 @@
 package com.alex.csvhelper.util;
 
-import com.alex.csvhelper.CsvBean;
 import com.alex.csvhelper.CsvReadException;
 import com.alex.csvhelper.CsvWriteException;
 import com.alex.csvhelper.Title;
@@ -168,7 +167,7 @@ public class CsvUtil {
     return sb.toString();
   }
 
-  public static <T extends CsvBean> String getFieldValue(T bean, String title) throws CsvWriteException {
+  public static <T> String getFieldValue(T bean, String title) throws CsvWriteException {
     try {
       Field[] fields = bean.getClass().getDeclaredFields();
       for (Field field : fields) {
